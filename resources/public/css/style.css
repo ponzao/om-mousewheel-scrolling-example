@@ -1,0 +1,20 @@
+body {
+  font-family: monospace;
+}
+
+table {
+  width: 100%;
+}
+
+th, td {
+  width: 25%;
+  height: 20px;
+  text-align: left;
+  padding-right: 100px;
+}
+
+span {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
