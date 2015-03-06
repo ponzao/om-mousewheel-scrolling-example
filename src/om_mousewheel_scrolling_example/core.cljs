@@ -54,7 +54,7 @@
                   (swap! app-state
                          (fn [state]
                            (let [modified-state (reduce (fn [acc x]
-                                                          (assoc-in acc [:people x :value] (* (rand) (rand-int 100000))))
+                                                          (update-in acc [:people x :value] inc))
                                                         state
                                                         (take 1000 (repeatedly #(rand-int size))))]
                              (update-in modified-state [:people] (fn [people]
