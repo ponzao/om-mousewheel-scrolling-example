@@ -11,18 +11,19 @@
                  [sablono "0.3.4"]
                  [org.omcljs/om "0.8.8"]
                  [secretary "1.2.1"]
+                 [http-kit "2.1.16"]
                  ]
 
   :plugins [[lein-cljsbuild "1.0.4"]
             [lein-figwheel "0.2.5-SNAPSHOT"]]
 
-  :source-paths ["src"]
+  :source-paths ["src/clj"]
 
   :clean-targets ^{:protect false} ["resources/public/js/compiled"]
 
   :cljsbuild {
     :builds [{:id "dev"
-              :source-paths ["src" "dev_src"]
+              :source-paths ["src/cljs" "dev_src/cljs"]
               :compiler {:output-to "resources/public/js/compiled/om_mousewheel_scrolling_example.js"
                          :output-dir "resources/public/js/compiled/out"
                          :optimizations :none

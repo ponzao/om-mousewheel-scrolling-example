@@ -1,36 +1,33 @@
 (ns ^:figwheel-always om-mousewheel-scrolling-example.core
-  (:require [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]
-            [secretary.core :as secretary :refer-macros [defroute]]
-            [goog.events :as events]
-            [goog.history.EventType :as EventType])
+  (:require-macros [cljs.core.async.macros :refer [go-loop]])
+  (:require
+    [cljs.core.async :refer [chan <! put!]]
+    [om.core :as om :include-macros true]
+    [om.dom :as dom :include-macros true]
+    [secretary.core :as secretary :refer-macros [defroute]]
+    [goog.events :as events]
+    [goog.history.EventType :as EventType])
   (:import goog.History))
 
 (enable-console-print!)
 
-(def size 200)
-
-(def first-names
-  ["Vesa" "Mikko" "Hannu" "Antti" "Sami" "Lassi" "Timo" "Mika" "Tuomas" "Simo" "Emmi" "Leo"
-   "Sampo" "Rami" "Esko" "Markus"])
-
-(def last-names
-  ["Marttila" "Pakarinen" "Leinonen" "Nupponen" "Aurejärvi" "Immonen" "Westkämper" "Kivimäki"
-   "Järvensivu" "Råman" "Sallinen" "Heng" "Seppäläinen" "Karjula" "Vääräsmäki" "Melander"])
-
-(defn generate-data
-  []
-  (vec (take size (repeatedly (fn []
-                                {:first-name (rand-nth first-names)
-                                 :last-name (rand-nth last-names)
-                                 :value 0})))))
+(defonce <server>
+  (let [<c> (chan)]
+    (doto (js/WebSocket. "ws://localhost:8080")
+      (set! -onmessage (fn [event]
+                         (put! <c> event.data))))
+    <c>))
 
 (defonce app-state
   (atom {:scroll {:limit 20
                   :offset 0}
-         :people (vec (map-indexed (fn [i x]
-                                     (assoc x :rank (inc i)))
-                                   (generate-data)))}))
+         :people []}))
+
+(defonce server-loop
+  (go-loop []
+    (when-let [data (<! <server>)]
+      (swap! app-state assoc-in [:people] (cljs.reader/read-string data))
+      (recur))))
 
 (defonce history
   (History.))
@@ -48,22 +45,6 @@
                  (do
                    (.setToken history offset)
                    (assoc-in state [:scroll :offset] offset))))))))
-
-(defonce interval
-  (let [updater (fn []
-                  (swap! app-state
-                         (fn [state]
-                           (let [modified-state (reduce (fn [acc x]
-                                                          (update-in acc [:people x :value] inc))
-                                                        state
-                                                        (take 1000 (repeatedly #(rand-int size))))]
-                             (update-in modified-state [:people] (fn [people]
-                                                                   (vec
-                                                                     (map-indexed (fn [i x]
-                                                                                    (assoc x :rank (inc i)))
-                                                                                  (sort-by :value > people)))))))))]
-    (updater)
-    (.setInterval js/window updater 5000)))
 
 (defn row-view
   [data owner]
