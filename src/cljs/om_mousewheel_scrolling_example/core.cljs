@@ -38,6 +38,7 @@
            (fn [state]
              (let [offset (js/parseInt offset 10)
                    limit (get-in state [:scroll :limit])
+                   ; TODO: Breaks bookmarking
                    n (count (:people state))]
                (if (or (neg? offset)
                        (> (+ offset limit) n))
