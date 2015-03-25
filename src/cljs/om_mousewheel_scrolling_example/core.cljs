@@ -72,7 +72,7 @@
             begin offset
             end (min (+ offset limit) (count (:people data)))]
         (dom/div #js {:className "container"}
-                 (dom/table nil
+                 (dom/table #js {:className "table table-striped table-bordered"}
                             (dom/thead nil
                                        (dom/tr nil
                                                (dom/th nil "Rank")
